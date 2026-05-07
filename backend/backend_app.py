@@ -12,7 +12,16 @@ POSTS = [
 
 @app.route('/api/posts', methods=['GET'])
 def get_posts():
-    return jsonify(POSTS)
+    sort = request.args.get('sort') or None
+    direction = request.args.get('direction') or 'asc'
+
+    if sort and sort not in ('title', 'content'):
+        return jsonify({"error": "sort must be 'title' or 'content'."}), 400
+    if direction not in ('asc', 'desc'):
+        return jsonify({"error": "direction must be 'asc' or 'desc'."}), 400
+
+    posts = sorted(POSTS, key=lambda p: p[sort].lower(), reverse=(direction == 'desc')) if sort else POSTS
+    return jsonify(posts)
 
 
 @app.route('/api/posts', methods=['POST'])
@@ -25,6 +34,7 @@ def create_posts():
     post = {"id": new_id, "title": data["title"], "content": data["content"]}
     POSTS.append(post)
     return jsonify(post), 201
+
 
 @app.route('/api/posts/<int:post_id>', methods=['DELETE'])
 def delete_post(post_id):
@@ -46,7 +56,6 @@ def update_post(post_id):
     if data and (data.get("title") or data.get("content")):
         post["title"] = data.get("title", post["title"])
         post["content"] = data.get("content", post["content"])
-
 
     return jsonify(post), 200
 
