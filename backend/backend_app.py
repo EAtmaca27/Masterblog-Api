@@ -20,7 +20,9 @@ def get_posts():
     if direction not in ('asc', 'desc'):
         return jsonify({"error": "direction must be 'asc' or 'desc'."}), 400
 
-    posts = sorted(POSTS, key=lambda p: p[sort].lower(), reverse=(direction == 'desc')) if sort else POSTS
+    posts = sorted(
+        POSTS, key=lambda p: p[sort].lower(), reverse=(direction == 'desc')
+    ) if sort else POSTS
     return jsonify(posts)
 
 
