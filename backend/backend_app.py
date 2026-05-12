@@ -12,6 +12,10 @@ POSTS = [
 
 @app.route('/api/posts', methods=['GET'])
 def get_posts():
+    '''
+    Route to get all posts with optional sorting and direction
+    :return: Error if sort or direction is invalid, sorted posts otherwise
+    '''
     sort = request.args.get('sort') or None
     direction = request.args.get('direction') or 'asc'
 
@@ -28,6 +32,10 @@ def get_posts():
 
 @app.route('/api/posts', methods=['POST'])
 def create_posts():
+    '''
+    Creates a new post with given title and content
+    :return: Error if title or content is missing, new post otherwise
+    '''
     data = request.get_json()
     if not data or not data.get("title") or not data.get("content"):
         return jsonify({"error": "Title and content are required."}), 400
@@ -40,6 +48,17 @@ def create_posts():
 
 @app.route('/api/posts/<int:post_id>', methods=['DELETE'])
 def delete_post(post_id):
+    """
+    Deletes a post based on the provided post ID.
+    The function looks for a post with a matching ID
+    and removes it from the list.
+    If no post is found with the given ID, an error response is
+    returned with a 404 status code.
+
+    :param post_id: The ID of the post to be deleted
+    :type post_id: int
+    :return: A JSON representation of the deleted post or an error message if the post is not found
+    """
     post = next((p for p in POSTS if p["id"] == post_id), None)
     if post is None:
         return jsonify({"error": f"Post with id {post_id} not found."}), 404
@@ -50,6 +69,22 @@ def delete_post(post_id):
 
 @app.route('/api/posts/<int:post_id>', methods=['PUT'])
 def update_post(post_id):
+    """
+    Updates an existing post by its unique `post_id`.
+    The function looks for a post with given `post_id`
+    within the predefined `POSTS` list.
+    If the post is found, its title and/or content are updated using
+    the provided JSON payload from the request body.
+    If no matching post is found, an error message is
+    returned with a status of `404`.
+
+    :param post_id: The unique identifier of the post to be updated.
+    :type post_id: int
+
+    :return: JSON-formatted response that includes the updated post if successful,
+        or an error message if the post is not found. The HTTP status code is 200
+        on success and 404 if the post was not found.
+    """
     post = next((p for p in POSTS if p["id"] == post_id), None)
     if post is None:
         return jsonify({"error": f"Post with id {post_id} not found."}), 404
@@ -64,6 +99,19 @@ def update_post(post_id):
 
 @app.route('/api/posts/search', methods=['GET'])
 def search_posts():
+    """
+    Handles the search functionality for posts.
+    This endpoint allows users to search for posts
+    using a query parameter 'title'.
+    The search is case-insensitive and matches
+    all posts containing the given query string in their titles.
+
+    Raises 400 Bad Request error code if the required query parameter 'title' is
+    not provided.
+
+    :returns: JSON response containing a list of search results (posts that match
+        the search query) or an error message if the query parameter is missing.
+    """
     query = request.args.get('title')
     if not query:
         return jsonify({"error": "Query parameter 'title' is required."}), 400
